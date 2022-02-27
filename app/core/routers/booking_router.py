@@ -56,3 +56,12 @@ async def coach_available_seats(
     """
     result = await bookings.available_seats_coach(coach_number, session)
     return result
+
+
+@router.get("/available/", response_model=list[SeatSchema])
+async def available_seats(session: AsyncSession = Depends(get_session)):
+    """
+    Returns the all Available Seats for Booking
+    """
+    result = await bookings.all_available_seats(session)
+    return result

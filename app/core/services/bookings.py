@@ -62,3 +62,24 @@ async def available_seats_coach(coach_number: str, session: AsyncSession):
     )
     result = await session.execute(query)
     return result.scalars().all()
+
+
+async def all_available_seats(session: AsyncSession):
+    """
+    Returns all the avaiable seats ina  coach for booking
+    """
+    query = (
+        select(Seat)
+        .where(Booking.seat_number == None)
+        .join(
+            Booking,
+            and_(
+                Seat.seat_number == Booking.seat_number,
+                Seat.coach_number == Booking.coach_number,
+            ),
+            isouter=True,
+            full=False,
+        )
+    )
+    result = await session.execute(query)
+    return result.scalars().all()

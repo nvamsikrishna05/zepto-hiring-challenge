@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.models.seat import Seat
@@ -6,6 +6,14 @@ from app.core.schemas.seat import CoachType
 
 seats_count = {CoachType.AC: 60, CoachType.NAC: 60, CoachType.Chair: 120}
 coach_prefix = {CoachType.AC: "B", CoachType.NAC: "S", CoachType.Chair: "C"}
+
+
+async def get_all_seats(session: AsyncSession) -> list[Seat]:
+    """
+    Fetches all the Seats in the Train
+    """
+    result = await session.execute(select(Seat).order_by(Seat.coach_type))
+    return result.scalars().all()
 
 
 async def get_coach_seats(session: AsyncSession, coach_number: str) -> list[Seat]:
@@ -35,4 +43,13 @@ async def add_coach(session: AsyncSession, coach_type: CoachType):
             coach_type=coach_type, seat_number=number, coach_number=new_coach_number
         )
         session.add(new_seat)
+    return
+
+
+async def delete_coach(session: AsyncSession, coach_number):
+    """
+    Deletes a Coach if it exists and all it's seats
+    """
+    query = delete(Seat).where(Seat.coach_number == coach_number)
+    await session.execute(query)
     return
